@@ -50,6 +50,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             disableProperty : '@',
             orientation     : '@',
             defaultLabel    : '@',
+            fixedButtonLabel : '@',
             maxLabels       : '@',
             isDisabled      : '=',
             directiveId     : '@',
@@ -213,6 +214,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                         $scope.varButtonLabel += '(Total: ' + $scope.selectedItems.length + ')';
                     }
                 }
+                $scope.varButtonLabel = ($scope.fixedButtonLabel)? $scope.fixedButtonLabel : $scope.varButtonLabel;
                 $scope.varButtonLabel = $sce.trustAsHtml( $scope.varButtonLabel + '<span class="multiSelect caret"></span>' );
             }
 
