@@ -77,17 +77,19 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                         'Filter: <input class="multiSelect" type="text" ng-model="labelFilter" />' +
                             '&nbsp;<button type="button" class="multiSelect helperButton" ng-click="labelFilter=\'\'">Clear</button>' +
                     '</div>' +
-                    '<div ng-repeat="item in (filteredModel = (inputModel | filter:labelFilter ))" ng-class="orientation" class="multiSelect multiSelectItem">' +
-                        '<div class="multiSelect acol">' +
-                            '<div class="multiSelect" ng-show="item[ tickProperty ]">&#10004;</div>' +
+                    '<div class="listContainer">' + 
+                        '<div ng-repeat="item in (filteredModel = (inputModel | filter:labelFilter ))" ng-class="orientation" class="multiSelect multiSelectItem">' +
+                            '<div class="multiSelect acol">' +
+                                '<div class="multiSelect" ng-show="item[ tickProperty ]">&#10004;</div>' +
+                            '</div>' +
+                            '<div class="multiSelect acol">' +
+                                '<label class="multiSelect" ng-class="{checkboxSelected:item[ tickProperty ]}">' +
+                                    '<input class="multiSelect checkbox" type="checkbox" ng-disabled="itemIsDisabled( item )" ng-checked="item[ tickProperty ]" ng-click="syncItems( item, $event )"/>' +
+                                    '<span class="multiSelect" ng-class="{disabled:itemIsDisabled( item )}" ng-bind-html="writeLabel( item, \'itemLabel\' )"></span>' +
+                                '</label>&nbsp;&nbsp;' +
+                            '</div>' +
                         '</div>' +
-                        '<div class="multiSelect acol">' +
-                            '<label class="multiSelect" ng-class="{checkboxSelected:item[ tickProperty ]}">' +
-                                '<input class="multiSelect checkbox" type="checkbox" ng-disabled="itemIsDisabled( item )" ng-checked="item[ tickProperty ]" ng-click="syncItems( item, $event )"/>' +
-                                '<span class="multiSelect" ng-class="{disabled:itemIsDisabled( item )}" ng-bind-html="writeLabel( item, \'itemLabel\' )"></span>' +
-                            '</label>&nbsp;&nbsp;' +
-                        '</div>' +
-                    '</div>' +
+                    '</div>' + 
                 '</div>' +
             '</span>',
 
