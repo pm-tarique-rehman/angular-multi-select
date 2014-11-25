@@ -144,7 +144,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
             // Call this function when a checkbox is ticked...
             $scope.syncItems = function( item, e ) {   
-                $scope.onItemClick(item);
+                $scope.onItemClick({item:item});
                 
                 index = $scope.inputModel.indexOf( item );  
                 $scope.inputModel[ index ][ $scope.tickProperty ]   = !$scope.inputModel[ index ][ $scope.tickProperty ];
