@@ -461,13 +461,11 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                             if ( checkboxes[i].className === 'multiSelect checkboxLayer show' ) {
                                 $scope.onBlur();     
                             }
-                                     
                             checkboxes[i].className = 'multiSelect checkboxLayer hide';                        
                         }
                         e.stopPropagation();
                     }                                                                        
                 }     
-                $scope.onBlur();
             });             
                     
             // For IE8, perhaps. Not sure if this is really executed.
