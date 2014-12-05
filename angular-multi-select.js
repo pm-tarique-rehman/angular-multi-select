@@ -457,12 +457,17 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                 if ( e.type === 'click' || e.type === 'touchend' && $scope.scrolled === false ) {
                     var checkboxes = document.querySelectorAll( '.checkboxLayer' );     
                     if ( e.target.className.indexOf === undefined || e.target.className.indexOf( 'multiSelect' )) {
-                        for( i=0; i < checkboxes.length; i++ ) {                                        
+                        for( i=0; i < checkboxes.length; i++ ) {   
+                            if ( checkboxes[i].className === 'multiSelect checkboxLayer show' ) {
+                                $scope.onBlur();     
+                            }
+                                     
                             checkboxes[i].className = 'multiSelect checkboxLayer hide';                        
                         }
                         e.stopPropagation();
                     }                                                                        
                 }     
+                $scope.onBlur();
             });             
                     
             // For IE8, perhaps. Not sure if this is really executed.
