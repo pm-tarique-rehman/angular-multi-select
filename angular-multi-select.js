@@ -31,7 +31,7 @@
  * --------------------------------------------------------------------------------
  */
 
-angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$filter', function ( $sce, $filter ) {
+angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$filter', "$q", function ( $sce, $filter, $q ) {
     return {
         restrict: 
             'AE',
@@ -60,6 +60,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             onBlur          : '&',
             onFocus         : '&',
             onItemClick     : '&',
+            onSearch        : '&'
         },
 
         template: 
@@ -75,10 +76,11 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     '</div>' +
                     '<div class="multiSelect line" ng-show="displayHelper( \'filter\' )">' + 
                         'Filter: <input class="multiSelect" type="text" ng-model="labelFilter" />' +
-                            '&nbsp;<button type="button" class="multiSelect helperButton" ng-click="labelFilter=\'\'">Clear</button>' +
+                            '&nbsp;<button type="button" class="multiSelect helperButton" ng-click="onSearchButtonClicked()">Search</button>' +
                     '</div>' +
                     '<div class="listContainer">' + 
-                        '<div ng-repeat="item in (filteredModel = (inputModel | filter:labelFilter ))" ng-class="orientation" class="multiSelect multiSelectItem">' +
+                        '<div ng-show="errors" style="font-size:13px">{{ errorMessage }}</div>' + 
+                        '<div ng-repeat="item in (filteredModel = (inputModel | filter: searchFilter))" ng-class="orientation" class="multiSelect multiSelectItem">' +
                             '<div class="multiSelect acol">' +
                                 '<div class="multiSelect" ng-show="item[ tickProperty ]">&#10004;</div>' +
                             '</div>' +
@@ -100,6 +102,46 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             $scope.varButtonLabel   = '';   
             $scope.currentButton    = null;
             $scope.scrolled         = false;
+            $scope.errors = false;
+            $scope.errorMessage = "";
+            $scope.initialInputModelLength = 0;
+
+            $scope.onSearchButtonClicked = function() {
+                console.log("[IN angular-multi-select] onSearchButtonClicked -> $scope.inputModel.length: ", $scope.initialInputModelLength)
+                if ( $scope.initialInputModelLength < 100 ) {     // short list - no need to call api
+                    $scope.searchFilter = $scope.labelFilter;    
+                }
+                else {
+                    console.log(" 1. [IN angular-multi-select] onSearchButtonClicked -> passing context over to pmIdProduct. scope.labelFilter: ", $scope.labelFilter);
+                    var promise = $scope.onSearch({searchFilter:$scope.labelFilter});
+                    console.log(" 9. [IN angular-multi-select] onSearchButtonClicked -> promise: ", promise)
+                    promise.then(function(result) {
+                        console.log(" 10. [IN angular-multi-select] onSearchButtonClicked -> promise doesnt have errors. resolving result", result)
+                        if ( result.data.metaData.totalRecords > 100 ) {
+                            $scope.errors = true;
+                            $scope.errorMessage = "Too many records found (" + result.data.metaData.totalRecords + "). Please modify your search criteria.";
+                            $scope.inputModel = {};
+                        }
+                        else {
+                            if ( result.data.metaData.totalRecords > 0 ) {
+                                $scope.inputModel  = result.data.items;
+                                $scope.errors = false;
+                            }
+                            else {
+                                $scope.errors = true;
+                                $scope.errorMessage = "No records found. Please modify your search criteria."
+                                $scope.inputModel = {};
+                            }
+                        }
+                    })
+                    promise.catch(function(result){
+                        console.log(" 10. [IN angular-multi-select] catch -> result: ", result)
+                        $scope.errors = true;
+                        $scope.errorMessage = "No records found. Please modify your search criteria."
+                        $scope.inputModel = {};
+                    });
+                }
+            };
 
             // Show or hide a helper element 
             $scope.displayHelper = function( elementString ) {
@@ -143,7 +185,8 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             }                
 
             // Call this function when a checkbox is ticked...
-            $scope.syncItems = function( item, e ) {   
+            $scope.syncItems = function( item, e ) {  
+                console.log("[IN angular-multi-select] item: ", item); 
                 $scope.onItemClick({item:item});
                 
                 index = $scope.inputModel.indexOf( item );  
@@ -307,7 +350,10 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                         $scope.currentButton = multiSelectButtons[ multiSelectIndex ];
                         checkboxes[ multiSelectIndex ].className = 'multiSelect checkboxLayer show';
                         // https://github.com/isteven/angular-multi-select/pull/5 - On open callback
-                        $scope.onOpen();                        
+                        $scope.onOpen();
+                        if ( $scope.inputModel ) {
+                            $scope.initialInputModelLength = $scope.inputModel.length;
+                        }                
                     }
 
                     // If it's already displayed, hide it
