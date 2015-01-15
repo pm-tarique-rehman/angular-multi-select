@@ -55,6 +55,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             isDisabled      : '=',
             directiveId     : '@',
             helperElements  : '@',
+            useApiSearch    : '@',
             onOpen          : '&',
             onClose         : '&',
             onBlur          : '&',
@@ -108,34 +109,39 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
             $scope.onSearchButtonClicked = function() {
                 console.log("[IN angular-multi-select] ... ")
-                console.log(" 1. [IN angular-multi-select] onSearchButtonClicked -> passing context over to pmIdProduct. scope.labelFilter: ", $scope.labelFilter);
-                var promise = $scope.onSearch({searchFilter:$scope.labelFilter});
-                console.log(" 9. [IN angular-multi-select] onSearchButtonClicked -> promise: ", promise)
-                promise.then(function(result) {
-                    console.log(" 10. [IN angular-multi-select] onSearchButtonClicked -> promise doesnt have errors. resolving result", result)
-                    if ( result.data.metaData.totalRecords > 100 ) {
-                        $scope.errors = true;
-                        $scope.errorMessage = "Too many records found (" + result.data.metaData.totalRecords + "). Please modify your search criteria.";
-                        $scope.inputModel = {};
-                    }
-                    else {
-                        if ( result.data.metaData.totalRecords > 0 ) {
-                            $scope.inputModel  = result.data.items;
-                            $scope.errors = false;
-                        }
-                        else {
+                if ( $scope.useApiSearch === undefined || $scope.useApiSearch === "no" ) {
+                    $scope.searchFilter = $scope.labelFilter;
+                }
+                else {
+                    console.log(" 1. [IN angular-multi-select] onSearchButtonClicked -> passing context over to pmIdProduct. scope.labelFilter: ", $scope.labelFilter);
+                    var promise = $scope.onSearch({searchFilter:$scope.labelFilter});
+                    console.log(" 9. [IN angular-multi-select] onSearchButtonClicked -> promise: ", promise)
+                    promise.then(function(result) {
+                        console.log(" 10. [IN angular-multi-select] onSearchButtonClicked -> promise doesnt have errors. resolving result", result)
+                        if ( result.data.metaData.totalRecords > 100 ) {
                             $scope.errors = true;
-                            $scope.errorMessage = "No records found. Please modify your search criteria."
+                            $scope.errorMessage = "Too many records found (" + result.data.metaData.totalRecords + "). Please modify your search criteria.";
                             $scope.inputModel = {};
                         }
-                    }
-                })
-                promise.catch(function(result){
-                    console.log(" 10. [IN angular-multi-select] catch -> result: ", result)
-                    $scope.errors = true;
-                    $scope.errorMessage = "No records found. Please modify your search criteria."
-                    $scope.inputModel = {};
-                });
+                        else {
+                            if ( result.data.metaData.totalRecords > 0 ) {
+                                $scope.inputModel  = result.data.items;
+                                $scope.errors = false;
+                            }
+                            else {
+                                $scope.errors = true;
+                                $scope.errorMessage = "No records found. Please modify your search criteria."
+                                $scope.inputModel = {};
+                            }
+                        }
+                    })
+                    promise.catch(function(result){
+                        console.log(" 10. [IN angular-multi-select] catch -> result: ", result)
+                        $scope.errors = true;
+                        $scope.errorMessage = "No records found. Please modify your search criteria."
+                        $scope.inputModel = {};
+                    });
+                }
             };
 
             // Show or hide a helper element
@@ -359,6 +365,9 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                         checkboxes[ multiSelectIndex ].className = 'multiSelect checkboxLayer show';
                         // https://github.com/isteven/angular-multi-select/pull/5 - On open callback
                         $scope.onOpen();
+                        if ( $scope.inputModel ) {
+                            $scope.initialInputModelLength = $scope.inputModel.length;
+                        }
                     }
 
                     // If it's already displayed, hide it
