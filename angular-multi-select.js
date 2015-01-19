@@ -76,11 +76,10 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                             '<button type="button" ng-click="select( \'reset\' )"  class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'reset\' )">Reset</button>' +
                     '</div>' +
                     '<div class="multiSelect line" ng-show="displayHelper( \'filter\' )">' +
-                        'Filter: <input class="multiSelect" type="text" ng-model="labelFilter" />' +
+                        'Filter: <input class="multiSelect" type="text" ng-model="labelFilter" ng-keypress="searchFilterKeypress($event)"/>' +
                             '&nbsp;<button type="button" class="multiSelect helperButton" ng-click="onSearchButtonClicked()">Search</button>' +
                     '</div>' +
                     '<div class="listContainer">' +
-                        '<div ng-show="errors" style="font-size:13px">{{ errorMessage }}</div>' +
                         '<div ng-repeat="item in (filteredModel = (inputModel | filter: searchFilter))" ng-class="orientation" class="multiSelect multiSelectItem">' +
                             '<div class="multiSelect acol">' +
                                 '<div class="multiSelect" ng-show="item[ tickProperty ]">&#10004;</div>' +
@@ -92,6 +91,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                                 '</label>&nbsp;&nbsp;' +
                             '</div>' +
                         '</div>' +
+                        '<div ng-show="errors" style="font-size:13px">{{ errorMessage }}</div>' +
                     '</div>' +
                 '</div>' +
             '</div>',
@@ -107,6 +107,12 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             $scope.errorMessage = "";
             $scope.initialInputModelLength = 0;
 
+            $scope.searchFilterKeypress = function (event) {
+                if (event.keyCode === 13) {
+                    $scope.onSearchButtonClicked();
+                }
+            };
+
             $scope.onSearchButtonClicked = function() {
                 console.log("[IN angular-multi-select] ... ")
                 if ( $scope.useApiSearch === undefined || $scope.useApiSearch === "no" ) {
@@ -121,7 +127,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                         if ( result.data.metaData.totalRecords > 100 ) {
                             $scope.errors = true;
                             $scope.errorMessage = "Too many records found (" + result.data.metaData.totalRecords + "). Please modify your search criteria.";
-                            $scope.inputModel = {};
+                            $scope.inputModel = result.data.items;
                         }
                         else {
                             if ( result.data.metaData.totalRecords > 0 ) {
@@ -131,10 +137,11 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                             else {
                                 $scope.errors = true;
                                 $scope.errorMessage = "No records found. Please modify your search criteria."
-                                $scope.inputModel = {};
+                                $scope.inputModel = result.data.items;
                             }
                         }
-                    })
+                    });
+
                     promise.catch(function(result){
                         console.log(" 10. [IN angular-multi-select] catch -> result: ", result)
                         $scope.errors = true;
