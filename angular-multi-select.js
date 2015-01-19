@@ -65,8 +65,8 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
         },
 
         template:
-            '<span class="multiSelect inlineBlock" >' +
-                '<button type="button" class="multiSelect button multiSelectButton" ng-click="toggleCheckboxes( $event ); refreshSelectedItems();" ng-bind-html="varButtonLabel" ng-focus="onFocus()" ng-blur="onBlur()">' +
+            '<div class="multiSelect inlineBlock" outside-click="outsideClick()">' +
+                '<button type="button" class="multiSelect button multiSelectButton" ng-click="toggleCheckboxes( $event ); refreshSelectedItems();" ng-bind-html="varButtonLabel" ng-focus="onFocus()" >' +
                 '</button>' +
                 '<div class="multiSelect checkboxLayer hide">' +
                     '<div class="multiSelect line" ng-show="displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' )">' +
@@ -94,7 +94,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                         '</div>' +
                     '</div>' +
                 '</div>' +
-            '</span>',
+            '</div>',
 
         link: function ( $scope, element, attrs ) {
 
@@ -183,6 +183,11 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     default:
                         break;
                 }$scope
+            }
+
+            $scope.outsideClick = function () {
+                $scope.onBlur();
+                console.log("Sdfsdf");
             }
 
             // Call this function when a checkbox is ticked...
@@ -518,9 +523,9 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     var checkboxes = document.querySelectorAll( '.checkboxLayer' );
                     if ( e.target.className.indexOf === undefined || e.target.className.indexOf( 'multiSelect' )) {
                         for( i=0; i < checkboxes.length; i++ ) {
-                            if ( checkboxes[i].className === 'multiSelect checkboxLayer show' ) {
-                                $scope.onBlur();
-                            }
+                            // if ( checkboxes[i].className === 'multiSelect checkboxLayer show' ) {
+                            //     // $scope.onBlur();
+                            // }
                             checkboxes[i].className = 'multiSelect checkboxLayer hide';
                         }
                         e.stopPropagation();
