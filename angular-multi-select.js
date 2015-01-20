@@ -92,6 +92,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                             '</div>' +
                         '</div>' +
                         '<div ng-show="errors" style="font-size:13px">{{ errorMessage }}</div>' +
+                        '<div ng-show="!filteredModel.length" style="font-size:13px">"No records found. Please modify your search criteria."</div>' +
                     '</div>' +
                 '</div>' +
             '</div>',
