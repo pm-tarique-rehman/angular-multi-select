@@ -66,7 +66,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
         template:
             '<div class="multiSelect inlineBlock" outside-click="outsideClick()">' +
-                '<button type="button" class="multiSelect button multiSelectButton" ng-click="toggleCheckboxes( $event ); refreshSelectedItems();" ng-bind-html="varButtonLabel" ng-focus="onFocus()" >' +
+                '<button type="button" class="multiSelect button multiSelectButton" ng-click="toggleCheckboxes( $event ); refreshSelectedItems();" ng-bind-html="varButtonLabel" ng-focus="onFocus()">' +
                 '</button>' +
                 '<div class="multiSelect checkboxLayer hide">' +
                     '<div class="multiSelect line" ng-show="displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' )">' +
@@ -92,7 +92,6 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                             '</div>' +
                         '</div>' +
                         '<div ng-show="errors" style="font-size:13px">{{ errorMessage }}</div>' +
-                        '<div ng-show="!filteredModel.length" style="font-size:13px">"No records found. Please modify your search criteria."</div>' +
                     '</div>' +
                 '</div>' +
             '</div>',
@@ -106,7 +105,18 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             $scope.scrolled         = false;
             $scope.errors = false;
             $scope.errorMessage = "";
-            $scope.initialInputModelLength = 0;
+            $scope.allSelectedItems = [];
+
+            $scope.persistSelection = function(item) {
+                console.log("[IN persistSelection] $scope.allSelectedItems: ", $scope.allSelectedItems);
+                if ( $scope.allSelectedItems.filter(function(internalItem){ return internalItem.name === item.name}).length === 0 ) {
+                    $scope.allSelectedItems.push(item);     // not in the array so add it
+                }
+                else {
+                    ;//$scope.allSelectedItems = $scope.allSelectedItems.filter(function(internalItem){ return internalItem.name !== item.name})// remove it
+                }
+                console.log("[IN persistSelection] AFTER IF: $scope.allSelectedItems: ", $scope.allSelectedItems);
+            };
 
             $scope.searchFilterKeypress = function (event) {
                 if (event.keyCode === 13) {
@@ -232,27 +242,29 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     if ( typeof value !== 'undefined' ) {
                         if ( value[ $scope.tickProperty ] === true || value[ $scope.tickProperty ] === 'true' ) {
                             $scope.selectedItems.push( value );
+                            $scope.persistSelection(value);
                         }
                     }
                 });
 
                 // Push into output model
                 if ( typeof attrs.outputModel !== 'undefined' ) {
-                    $scope.outputModel = angular.copy( $scope.selectedItems );
+                    $scope.outputModel = angular.copy( $scope.allSelectedItems );
                 }
 
                 // Write label...
-                if ( $scope.selectedItems.length === 0 ) {
-                    $scope.varButtonLabel = ($scope.defaultLabel)? $scope.defaultLabel : 'None selected';
+                if ( $scope.allSelectedItems.length === 0 ) {
+                    //$scope.varButtonLabel = ($scope.defaultLabel)? $scope.defaultLabel : 'None selected';
+                    $scope.varButtonLabel = $scope.defaultLabel;
                 }
                 else {
-                    var tempMaxLabels = $scope.selectedItems.length;
+                    var tempMaxLabels = $scope.allSelectedItems.length;
                     if ( typeof $scope.maxLabels !== 'undefined' && $scope.maxLabels !== '' ) {
                         tempMaxLabels = $scope.maxLabels;
                     }
 
                     // If max amount of labels displayed..
-                    if ( $scope.selectedItems.length > tempMaxLabels ) {
+                    if ( $scope.allSelectedItems.length > tempMaxLabels ) {
                         $scope.more = true;
                     }
                     else {
@@ -268,10 +280,10 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     //     }
                     // });
 
-                    if ($scope.selectedItems.length == $scope.inputModel.length) {
-                        $scope.varButtonLabel = 'All Selected';
-                    } else {
-                        angular.forEach( $scope.selectedItems, function( value, key ) {
+                    //if ($scope.selectedItems.length == $scope.inputModel.length) {
+                    //    ;   //$scope.varButtonLabel = 'All Selected';
+                    //} else {
+                        angular.forEach( $scope.allSelectedItems, function( value, key ) {
                             if ( typeof value !== 'undefined' ) {
                                 if ( ctr < tempMaxLabels ) {
                                     $scope.varButtonLabel += ( $scope.varButtonLabel.length > 0 ? ', ' : '') + $scope.writeLabel( value, 'buttonLabel' );
@@ -279,14 +291,14 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                                 ctr++;
                             }
                         });
-                    }
+                    //}
 
-                    if ( $scope.more === true && ($scope.selectedItems.length !== $scope.inputModel.length)) {
+                    if ( $scope.more === true && ($scope.allSelectedItems.length !== $scope.inputModel.length)) {
                         if (tempMaxLabels > 0) {
                             $scope.varButtonLabel += ', ... ';
                         }
 
-                        $scope.varButtonLabel += '(Total: ' + $scope.selectedItems.length + ')';
+                        $scope.varButtonLabel += '(Total: ' + $scope.allSelectedItems.length + ')';
                     }
                 }
                 $scope.varButtonLabel = ($scope.fixedButtonLabel)? $scope.fixedButtonLabel : $scope.varButtonLabel;
@@ -378,9 +390,6 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                         checkboxes[ multiSelectIndex ].className = 'multiSelect checkboxLayer show';
                         // https://github.com/isteven/angular-multi-select/pull/5 - On open callback
                         $scope.onOpen();
-                        if ( $scope.inputModel ) {
-                            $scope.initialInputModelLength = $scope.inputModel.length;
-                        }
                     }
 
                     // If it's already displayed, hide it
@@ -424,6 +433,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                                 value[ $scope.tickProperty ] = false;
                             }
                         });
+                        $scope.allSelectedItems = [];   // reset
                         break;
                     case 'RESET':
                         $scope.inputModel = angular.copy( $scope.backUp );
