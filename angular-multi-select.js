@@ -66,7 +66,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
         template:
             '<div class="multiSelect inlineBlock" outside-click="outsideClick()">' +
-                '<button type="button" class="multiSelect button multiSelectButton" ng-click="toggleCheckboxes( $event ); refreshSelectedItems();" ng-bind-html="varButtonLabel" ng-focus="onFocus()">' +
+                '<button type="button" class="multiSelect button multiSelectButton" ng-click="toggleCheckboxes( $event ); refreshSelectedItems();" ng-bind-html="varButtonLabel" ng-focus="onFocus()" >' +
                 '</button>' +
                 '<div class="multiSelect checkboxLayer hide">' +
                     '<div class="multiSelect line" ng-show="displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' )">' +
@@ -108,15 +108,37 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             $scope.errorMessage = "";
             $scope.allSelectedItems = [];
 
-            $scope.persistSelection = function(item) {
-                console.log("[IN persistSelection] $scope.allSelectedItems: ", $scope.allSelectedItems);
-                if ( $scope.allSelectedItems.filter(function(internalItem){ return internalItem.name === item.name}).length === 0 ) {
-                    $scope.allSelectedItems.push(item);     // not in the array so add it
+
+            $scope.isElementInList = function (list, element) {
+                var filteredList = list.filter(function (item){
+                    return element.name === item.name;
+                });
+                return !!filteredList.length;
+            };
+
+            $scope.persistSelection = function(item, operation, isTicked) {
+                // //console.log("[IN persistSelection] $scope.allSelectedItems: ", $scope.allSelectedItems);
+                var tempEle = angular.copy(item),
+                    isElementInList = $scope.isElementInList;
+                //delete tempEle.ticked;
+
+                if(!isElementInList($scope.allSelectedItems, tempEle)) {
+                    if (operation === "add") {
+                        $scope.allSelectedItems.push(tempEle);
+                    }
+                } else {
+                    if (operation === "remove") {
+                        $scope.allSelectedItems.splice($scope.allSelectedItems.indexOf(tempEle),1);
+                    }
                 }
-                else {
-                    ;//$scope.allSelectedItems = $scope.allSelectedItems.filter(function(internalItem){ return internalItem.name !== item.name})// remove it
-                }
-                console.log("[IN persistSelection] AFTER IF: $scope.allSelectedItems: ", $scope.allSelectedItems);
+
+                // if ( $scope.allSelectedItems.filter(function(internalItem){ return internalItem.name === item.name}).length === 0 ) {
+                //     $scope.allSelectedItems.push(item);     // not in the array so add it
+                // }
+                // else {
+                //     ;//$scope.allSelectedItems = $scope.allSelectedItems.filter(function(internalItem){ return internalItem.name !== item.name})// remove it
+                // }
+                // //console.log("[IN persistSelection] AFTER IF: $scope.allSelectedItems: ", $scope.allSelectedItems);
             };
 
             $scope.searchFilterKeypress = function (event) {
@@ -126,16 +148,16 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             };
 
             $scope.onSearchButtonClicked = function() {
-                console.log("[IN angular-multi-select] ... ")
+                //console.log("[IN angular-multi-select] ... ")
                 if ( $scope.useApiSearch === undefined || $scope.useApiSearch === "no" ) {
                     $scope.searchFilter = $scope.labelFilter;
                 }
                 else {
-                    console.log(" 1. [IN angular-multi-select] onSearchButtonClicked -> passing context over to pmIdProduct. scope.labelFilter: ", $scope.labelFilter);
+                    //console.log(" 1. [IN angular-multi-select] onSearchButtonClicked -> passing context over to pmIdProduct. scope.labelFilter: ", $scope.labelFilter);
                     var promise = $scope.onSearch({searchFilter:$scope.labelFilter});
-                    console.log(" 9. [IN angular-multi-select] onSearchButtonClicked -> promise: ", promise)
+                    //console.log(" 9. [IN angular-multi-select] onSearchButtonClicked -> promise: ", promise)
                     promise.then(function(result) {
-                        console.log(" 10. [IN angular-multi-select] onSearchButtonClicked -> promise doesnt have errors. resolving result", result)
+                        //console.log(" 10. [IN angular-multi-select] onSearchButtonClicked -> promise doesnt have errors. resolving result", result)
                         if ( result.data.metaData.totalRecords > 100 ) {
                             $scope.errors = true;
                             $scope.errorMessage = "Too many records found (" + result.data.metaData.totalRecords + "). Please modify your search criteria.";
@@ -155,7 +177,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     });
 
                     promise.catch(function(result){
-                        console.log(" 10. [IN angular-multi-select] catch -> result: ", result)
+                        //console.log(" 10. [IN angular-multi-select] catch -> result: ", result)
                         $scope.errors = true;
                         $scope.errorMessage = "No records found. Please modify your search criteria."
                         $scope.inputModel = {};
@@ -206,12 +228,12 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
             $scope.outsideClick = function () {
                 $scope.onBlur();
-                console.log("Sdfsdf");
+                //console.log("Sdfsdf");
             }
 
             // Call this function when a checkbox is ticked...
             $scope.syncItems = function( item, e ) {
-                console.log("[IN angular-multi-select] item: ", item);
+                //console.log("[IN angular-multi-select] item: ", item);
                 $scope.onItemClick({item:item});
 
                 index = $scope.inputModel.indexOf( item );
@@ -228,7 +250,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     $scope.toggleCheckboxes( e );
                 }
 
-                $scope.refreshSelectedItems();
+                $scope.refreshSelectedItems(true);
                 e.target.focus();
             }
 
@@ -241,10 +263,18 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
                 angular.forEach( $scope.inputModel, function( value, key ) {
                     if ( typeof value !== 'undefined' ) {
+
+                        if ($scope.isElementInList($scope.allSelectedItems, value)) {
+                            value[ $scope.tickProperty ] = true;
+                        }
+
                         if ( value[ $scope.tickProperty ] === true || value[ $scope.tickProperty ] === 'true' ) {
                             $scope.selectedItems.push( value );
-                            $scope.persistSelection(value);
+                            $scope.persistSelection(value, "add");
+                        } else {
+                            $scope.persistSelection(value, "remove");
                         }
+
                     }
                 });
 
@@ -449,19 +479,19 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             // Might give false positives so just ignore if everything's alright.
             validate = function() {
                 if ( !( 'inputModel' in attrs )) {
-                    console.log( 'Multi-select error: input-model is not defined! (ID: ' + $scope.directiveId + ')' );
+                    //console.log( 'Multi-select error: input-model is not defined! (ID: ' + $scope.directiveId + ')' );
                 }
 
                 if ( !( 'buttonLabel' in attrs )) {
-                    console.log( 'Multi-select error: button-label is not defined! (ID: ' + $scope.directiveId + ')' );
+                    //console.log( 'Multi-select error: button-label is not defined! (ID: ' + $scope.directiveId + ')' );
                 }
 
                 if ( !( 'itemLabel' in attrs )) {
-                    console.log( 'Multi-select error: item-label is not defined! (ID: ' + $scope.directiveId + ')' );
+                    //console.log( 'Multi-select error: item-label is not defined! (ID: ' + $scope.directiveId + ')' );
                 }
 
                 if ( !( 'tickProperty' in attrs )) {
-                    console.log( 'Multi-select error: tick-property is not defined! (ID: ' + $scope.directiveId + ')' );
+                    //console.log( 'Multi-select error: tick-property is not defined! (ID: ' + $scope.directiveId + ')' );
                 }
             }
 
@@ -484,7 +514,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     }
                 });
                 if ( notThere === true ) {
-                    console.log( 'Multi-select error: property "' + missingLabel + '" is not available in the input model. (Name: ' + $scope.directiveId + ')' );
+                    //console.log( 'Multi-select error: property "' + missingLabel + '" is not available in the input model. (Name: ' + $scope.directiveId + ')' );
                 }
             }
 
@@ -503,6 +533,8 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     validateProperties( $scope.itemLabel.split( ' ' ), $scope.inputModel );
                     validateProperties( new Array( $scope.tickProperty ), $scope.inputModel );
                 }
+
+                console.log("0");
                 $scope.refreshSelectedItems();
             }, true);
 
@@ -513,6 +545,9 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     validateProperties( $scope.itemLabel.split( ' ' ), $scope.inputModel );
                     validateProperties( new Array( $scope.tickProperty ), $scope.inputModel );
                 }
+
+
+                console.log("1");
                 $scope.backUp = angular.copy( $scope.inputModel );
                 $scope.refreshSelectedItems();
             });
