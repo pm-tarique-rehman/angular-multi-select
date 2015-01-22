@@ -108,10 +108,22 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
 
             $scope.isElementInList = function (list, element) {
-                var filteredList = list.filter(function (item){
-                    return element.name === item.name;
+                var index = -1,
+                    key = key || "name";
+
+                list.forEach(function (item, itemIndex) {
+                    if (item[key] === element [key]) {
+                        if (index === -1) {
+                            index = itemIndex;
+                        }
+                    }
                 });
-                return !!filteredList.length;
+
+                return index;
+                // var filteredList = list.filter(function (item){
+                //     return element.name === item.name;
+                // });
+                // return !!filteredList.length;
             };
 
             $scope.showAllItems = function() {
@@ -125,16 +137,17 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             $scope.persistSelection = function(item, operation, isTicked) {
                 // //console.log("[IN persistSelection] $scope.allSelectedItems: ", $scope.allSelectedItems);
                 var tempEle = angular.copy(item),
-                    isElementInList = $scope.isElementInList;
+                    elemIndex = $scope.isElementInList($scope.allSelectedItems, tempEle);
+
                 //delete tempEle.ticked;
 
-                if(!isElementInList($scope.allSelectedItems, tempEle)) {
+                if( elemIndex === -1) {
                     if (operation === "add") {
                         $scope.allSelectedItems.push(tempEle);
                     }
                 } else {
                     if (operation === "remove") {
-                        $scope.allSelectedItems.splice($scope.allSelectedItems.indexOf(tempEle),1);
+                        $scope.allSelectedItems.splice(elemIndex, 1);
                     }
                 }
 
@@ -261,7 +274,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             }
 
             // Refresh the button to display the selected items and push into output model if specified
-            $scope.refreshSelectedItems = function() {
+            $scope.refreshSelectedItems = function(isManualClick) {
 
                 $scope.varButtonLabel   = '';
                 $scope.selectedItems    = [];
@@ -270,8 +283,10 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                 angular.forEach( $scope.inputModel, function( value, key ) {
                     if ( typeof value !== 'undefined' ) {
 
-                        if ($scope.isElementInList($scope.allSelectedItems, value)) {
+                        if (!isManualClick) {
+                            if ($scope.isElementInList($scope.allSelectedItems, value) !== -1) {
                             value[ $scope.tickProperty ] = true;
+                            }
                         }
 
                         if ( value[ $scope.tickProperty ] === true || value[ $scope.tickProperty ] === 'true' ) {
