@@ -43,6 +43,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
         {
             inputModel      : '=',
             outputModel     : '=',
+            editMode        : '=',
             buttonLabel     : '@',
             selectionMode   : '@',
             itemLabel       : '@',
@@ -69,16 +70,22 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                 '<div title="{{ showAllItems() }}"><button type="button" class="multiSelect button multiSelectButton" ng-click="toggleCheckboxes( $event ); refreshSelectedItems();" ng-bind-html="varButtonLabel" ng-focus="onFocus()" >' +
                 '</button></div>' +
                 '<div class="multiSelect checkboxLayer hide">' +
-                   '<div class="multiSelect line" ng-show="displayHelper( \'filter\' )">' +
+                    '<div class="multiSelect line" ng-show="displayHelper( \'filter\' )">' +
                         'Filter: <input class="multiSelect" type="text" ng-model="labelFilter" ng-keypress="searchFilterKeypress($event)"/>' +
                             '&nbsp;<button type="button" class="multiSelect helperButton" ng-click="onSearchButtonClicked()">Search</button>' +
                     '</div>' +
-                     '<div class="multiSelect line" ng-show="displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' )">' +
-                        '<span ng-if="!isDisabled && ( displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' ))"> &nbsp;</span>' +
-                        '<button type="button" ng-click="select( \'all\' )"    class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'all\' )">Select All</button> ' +
-                    '</div>' +
+                     '<div class="multiSelect line">' +
+                         '<div class="multiSelect inlineBlock" ng-show="displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' )">' +
+                            '<span ng-if="!isDisabled && ( displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' ))"> &nbsp;</span>' +
+                            '<button type="button" ng-click="select( \'all\' )"    class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'all\' )">Select All</button> ' +
+                        '</div> ' +
+                        '<div class="multiSelect selectedFilterDiv">'+
+                            '<label class="multiSelect selectFilterLabel" >Show Selected</label>' +
+                            '<input class="multiSelect selectFilterCheckbox" style="display:inlineBlock" type="checkbox" ng-model="editMode" ng-change="selectedFilterClicked($event)"/>' +
+                        '</div>' +
+                    '</div>'+
                     '<div class="listContainer">' +
-                        '<div ng-repeat="item in (filteredModel = (inputModel | filter: searchFilter))" ng-class="orientation" class="multiSelect multiSelectItem">' +
+                        '<div ng-repeat="item in (filteredModel = ( (editMode ? allSelectedItems : inputModel) | filter: searchFilter))" ng-class="orientation" class="multiSelect multiSelectItem">' +
                             '<div class="multiSelect acol">' +
                                 '<div class="multiSelect" ng-show="item[ tickProperty ]">&#10004;</div>' +
                             '</div>' +
@@ -106,6 +113,14 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             $scope.errorMessage = "";
             $scope.allSelectedItems = [];
 
+
+            $scope.selectedFilterClicked = function (event) {
+                if (!$scope.editMode) {
+                    $scope.onSearchButtonClicked();
+                } else {
+                    $scope.errors = false;
+                }
+            };
 
             $scope.isElementInList = function (list, element) {
                 var index = -1,
@@ -135,9 +150,10 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             };
 
             $scope.persistSelection = function(item, operation, isTicked) {
-                // //console.log("[IN persistSelection] $scope.allSelectedItems: ", $scope.allSelectedItems);
+
+                //if ($scope.internalChangeFlag) {
                 var tempEle = angular.copy(item),
-                    elemIndex = $scope.isElementInList($scope.allSelectedItems, tempEle);
+                elemIndex = $scope.isElementInList($scope.allSelectedItems, tempEle);
 
                 //delete tempEle.ticked;
 
@@ -150,14 +166,8 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                         $scope.allSelectedItems.splice(elemIndex, 1);
                     }
                 }
+                //}
 
-                // if ( $scope.allSelectedItems.filter(function(internalItem){ return internalItem.name === item.name}).length === 0 ) {
-                //     $scope.allSelectedItems.push(item);     // not in the array so add it
-                // }
-                // else {
-                //     ;//$scope.allSelectedItems = $scope.allSelectedItems.filter(function(internalItem){ return internalItem.name !== item.name})// remove it
-                // }
-                // //console.log("[IN persistSelection] AFTER IF: $scope.allSelectedItems: ", $scope.allSelectedItems);
             };
 
             $scope.searchFilterKeypress = function (event) {
@@ -168,7 +178,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
             $scope.onSearchButtonClicked = function() {
                 //console.log("[IN angular-multi-select] ... ")
-                if ( $scope.useApiSearch === undefined || $scope.useApiSearch === "no" ) {
+                if ( $scope.useApiSearch === undefined || $scope.useApiSearch === "no" || $scope.editMode) {
                     $scope.searchFilter = $scope.labelFilter;
                 }
                 else {
@@ -255,18 +265,26 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                 //console.log("[IN angular-multi-select] item: ", item);
                 $scope.onItemClick({item:item});
 
-                index = $scope.inputModel.indexOf( item );
-                $scope.inputModel[ index ][ $scope.tickProperty ]   = !$scope.inputModel[ index ][ $scope.tickProperty ];
+                //index = $scope.inputModel.indexOf( item );
+                index = $scope.isElementInList($scope.inputModel, item);
 
-                // If it's single selection mode
-                if ( attrs.selectionMode && $scope.selectionMode.toUpperCase() === 'SINGLE' ) {
-                    $scope.inputModel[ index ][ $scope.tickProperty ] = true;
-                    for( i=0; i<$scope.inputModel.length;i++) {
-                        if ( i !== index ) {
-                            $scope.inputModel[ i ][ $scope.tickProperty ] = false;
+                if ($scope.editMode) {
+                    $scope.persistSelection(item, "remove");
+                }
+
+                if (index !== -1) {
+                    $scope.inputModel[ index ][ $scope.tickProperty ]   = !$scope.inputModel[ index ][ $scope.tickProperty ];
+                                    // If it's single selection mode
+                    if ( attrs.selectionMode && $scope.selectionMode.toUpperCase() === 'SINGLE' ) {
+                        $scope.inputModel[ index ][ $scope.tickProperty ] = true;
+                        for( i=0; i<$scope.inputModel.length;i++) {
+                            if ( i !== index ) {
+                                $scope.inputModel[ i ][ $scope.tickProperty ] = false;
+                            }
                         }
+                        $scope.toggleCheckboxes( e );
                     }
-                    $scope.toggleCheckboxes( e );
+
                 }
 
                 $scope.refreshSelectedItems(true);
@@ -285,7 +303,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
                         if (!isManualClick) {
                             if ($scope.isElementInList($scope.allSelectedItems, value) !== -1) {
-                            value[ $scope.tickProperty ] = true;
+                                value[ $scope.tickProperty ] = true;
                             }
                         }
 
@@ -295,12 +313,12 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                         } else {
                             $scope.persistSelection(value, "remove");
                         }
-
                     }
                 });
 
                 // Push into output model
                 if ( typeof attrs.outputModel !== 'undefined' ) {
+                    //$scope.internalChangeFlag = true;
                     $scope.outputModel = angular.copy( $scope.allSelectedItems );
                 }
 
@@ -546,6 +564,17 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             validate();
             $scope.refreshSelectedItems();
 
+
+            // $scope.$watch('editMode', function (newVal, oldVal){
+
+            // });
+
+            // $scope.$watch('outputModel', function (newVal, oldVal){
+            //     if (!$scope.internalChangeFlag) {
+            //         $scope.allSelectedItems  = angular.copy(newVal);
+            //     }
+            // });
+
             // Watch for changes in input model
             // Updates multi-select when user select/deselect a single checkbox programatically
             // https://github.com/isteven/angular-multi-select/issues/8
@@ -555,7 +584,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     validateProperties( new Array( $scope.tickProperty ), $scope.inputModel );
                 }
 
-                console.log("0");
+               // console.log("0");
                 $scope.refreshSelectedItems();
             }, true);
 
@@ -568,7 +597,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                 }
 
 
-                console.log("1");
+              //  console.log("1");
                 $scope.backUp = angular.copy( $scope.inputModel );
                 $scope.refreshSelectedItems();
             });
