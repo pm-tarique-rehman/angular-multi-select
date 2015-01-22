@@ -66,18 +66,16 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
         template:
             '<div class="multiSelect inlineBlock" outside-click="outsideClick()">' +
-                '<button type="button" class="multiSelect button multiSelectButton" ng-click="toggleCheckboxes( $event ); refreshSelectedItems();" ng-bind-html="varButtonLabel" ng-focus="onFocus()" >' +
-                '</button>' +
+                '<div title="{{ showAllItems() }}"><button type="button" class="multiSelect button multiSelectButton" ng-click="toggleCheckboxes( $event ); refreshSelectedItems();" ng-bind-html="varButtonLabel" ng-focus="onFocus()" >' +
+                '</button></div>' +
                 '<div class="multiSelect checkboxLayer hide">' +
-                    '<div class="multiSelect line" ng-show="displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' )">' +
-                        '<span ng-if="!isDisabled && ( displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' ))">Select: &nbsp;</span>' +
-                            '<button type="button" ng-click="select( \'all\' )"    class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'all\' )">All</button> ' +
-                            '<button type="button" ng-click="select( \'none\' )"   class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'none\' )">None</button> ' +
-                            '<button type="button" ng-click="select( \'reset\' )"  class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'reset\' )">Reset</button>' +
-                    '</div>' +
-                    '<div class="multiSelect line" ng-show="displayHelper( \'filter\' )">' +
+                   '<div class="multiSelect line" ng-show="displayHelper( \'filter\' )">' +
                         'Filter: <input class="multiSelect" type="text" ng-model="labelFilter" ng-keypress="searchFilterKeypress($event)"/>' +
                             '&nbsp;<button type="button" class="multiSelect helperButton" ng-click="onSearchButtonClicked()">Search</button>' +
+                    '</div>' +
+                     '<div class="multiSelect line" ng-show="displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' )">' +
+                        '<span ng-if="!isDisabled && ( displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' ))"> &nbsp;</span>' +
+                        '<button type="button" ng-click="select( \'all\' )"    class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'all\' )">Select All</button> ' +
                     '</div>' +
                     '<div class="listContainer">' +
                         '<div ng-repeat="item in (filteredModel = (inputModel | filter: searchFilter))" ng-class="orientation" class="multiSelect multiSelectItem">' +
@@ -114,6 +112,14 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     return element.name === item.name;
                 });
                 return !!filteredList.length;
+            };
+
+            $scope.showAllItems = function() {
+                var showAllItemNames = []
+                angular.forEach($scope.allSelectedItems,function(value){
+                    showAllItemNames.push(value.name);
+                })
+                return showAllItemNames.join(", ");
             };
 
             $scope.persistSelection = function(item, operation, isTicked) {
