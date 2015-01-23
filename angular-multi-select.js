@@ -94,7 +94,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                             '<div class="multiSelect acol">' +
                                 '<label class="multiSelect" ng-class="{checkboxSelected:item[ tickProperty ]}">' +
                                     '<input class="multiSelect checkbox" type="checkbox" ng-disabled="itemIsDisabled( item )" ng-checked="item[ tickProperty ]" ng-click="syncItems( item, $event )"/>' +
-                                    '<span class="multiSelect" ng-class="{disabled:itemIsDisabled( item )}" ng-bind-html="writeLabel( item, \'itemLabel\' )"></span>' +
+                                    '<span class="multiSelect" title="{{ writeLabel( item, \'itemLabel\' ) }}" ng-class="{disabled:itemIsDisabled( item )}" ng-bind-html="writeLabel( item, \'itemLabel\' )"></span>' +
                                 '</label>&nbsp;&nbsp;' +
                             '</div>' +
                         '</div>' +
