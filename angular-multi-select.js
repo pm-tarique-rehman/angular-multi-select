@@ -44,6 +44,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             inputModel      : '=',
             outputModel     : '=',
             editMode        : '=',
+            clearSelection  : '=',
             buttonLabel     : '@',
             selectionMode   : '@',
             itemLabel       : '@',
@@ -78,6 +79,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                          '<div class="multiSelect inlineBlock" ng-show="displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' )">' +
                             '<span ng-if="!isDisabled && ( displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' ))"> &nbsp;</span>' +
                             '<button type="button" ng-click="select( \'all\' )"    class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'all\' )">Select All</button> ' +
+                            '<button type="button" ng-click="select( \'none\' )"   class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'none\' )">Remove All</button> ' +
                         '</div> ' +
                         '<div class="multiSelect selectedFilterDiv">'+
                             '<label class="multiSelect selectFilterLabel" >Show Selected</label>' +
@@ -564,6 +566,18 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             validate();
             $scope.refreshSelectedItems();
 
+
+            $scope.$watch('clearSelection', function (newVal, oldVal){
+
+                if (newVal === true) {
+                    $scope.allSelectedItems = [];
+                    $scope.varButtonLabel = $scope.defaultLabel;
+                    if ( typeof attrs.outputModel !== 'undefined' ) {
+                        //$scope.internalChangeFlag = true;
+                        $scope.outputModel = angular.copy( $scope.allSelectedItems );
+                    }
+                }
+            });
 
             // $scope.$watch('editMode', function (newVal, oldVal){
 
