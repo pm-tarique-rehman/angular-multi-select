@@ -173,6 +173,10 @@ label.multiSelect span:hover {
     width:22px;
 }
 
+.filterButtonsContainerDiv {
+    float: left;
+}
+
 .selectedFilterDiv {
     float: right;
 }

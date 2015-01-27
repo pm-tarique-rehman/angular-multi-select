@@ -76,7 +76,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                             '&nbsp;<button type="button" class="multiSelect helperButton" ng-click="onSearchButtonClicked()">Search</button>' +
                     '</div>' +
                      '<div class="multiSelect line">' +
-                         '<div class="multiSelect inlineBlock" ng-show="displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' )">' +
+                         '<div class="multiSelect inlineBlock filterButtonsContainerDiv" ng-show="displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' )">' +
                             '<span ng-if="!isDisabled && ( displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' ))"> &nbsp;</span>' +
                             '<button type="button" ng-click="select( \'all\' )"    class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'all\' )">Select All</button> ' +
                             '<button type="button" ng-click="select( \'none\' )"   class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'none\' )">Remove All</button> ' +
@@ -98,8 +98,8 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                                 '</label>&nbsp;&nbsp;' +
                             '</div>' +
                         '</div>' +
-                        '<div ng-show="errors" style="font-size:13px">{{ errorMessage }}</div>' +
-                        '<div ng-show="!filteredModel.length && !useApiSearch" style="font-size:13px">"No records found. Please modify your search criteria."</div>' +
+                        '<div class="erroDiv" ng-show="errors" style="font-size:13px">{{ errorMessage }}</div>' +
+                        '<div class="erroDiv" ng-show="!filteredModel.length && !useApiSearch" style="font-size:13px">"No records found. Please modify your search criteria."</div>' +
                     '</div>' +
                 '</div>' +
             '</div>',
