@@ -98,8 +98,9 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                                 '</label>&nbsp;&nbsp;' +
                             '</div>' +
                         '</div>' +
-                        '<div class="erroDiv" ng-show="errors" style="font-size:13px">{{ errorMessage }}</div>' +
-                        '<div class="erroDiv" ng-show="!filteredModel.length && !useApiSearch" style="font-size:13px">"No records found. Please modify your search criteria."</div>' +
+                        '<div ng-show="errors" style="font-size:13px">{{ errorMessage }}</div>' +
+                        '<div ng-show="!filteredModel.length && !useApiSearch" style="font-size:13px">"No records found. Please modify your search criteria."</div>' +
+                        '<div ng-show="!filteredModel.length && editMode" style="font-size:13px">{{(allSelectedItems.length ? "No records found. Please modify your search criteria." : "No Records.")}}</div>' +
                     '</div>' +
                 '</div>' +
             '</div>',
@@ -117,11 +118,15 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
 
             $scope.selectedFilterClicked = function (event) {
-                if (!$scope.editMode) {
-                    $scope.onSearchButtonClicked();
-                } else {
+                $scope.labelFilter = '';
+                if ($scope.editMode) {
                     $scope.errors = false;
                 }
+                // else {
+                //     $scope.errors = false;
+                // }
+                //
+                $scope.onSearchButtonClicked();
             };
 
             $scope.isElementInList = function (list, element) {
@@ -175,6 +180,8 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             $scope.searchFilterKeypress = function (event) {
                 if (event.keyCode === 13) {
                     $scope.onSearchButtonClicked();
+                    event.stopPropagation();
+                    event.preventDefault();
                 }
             };
 
@@ -182,6 +189,10 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                 //console.log("[IN angular-multi-select] ... ")
                 if ( $scope.useApiSearch === undefined || $scope.useApiSearch === "no" || $scope.editMode) {
                     $scope.searchFilter = $scope.labelFilter;
+                    if ($scope.useApiSearch === "yes") {
+                        $scope.inputModel  =  [];
+                    }
+
                 }
                 else {
                     //console.log(" 1. [IN angular-multi-select] onSearchButtonClicked -> passing context over to pmIdProduct. scope.labelFilter: ", $scope.labelFilter);
@@ -259,7 +270,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
             $scope.outsideClick = function () {
                 $scope.onBlur();
-                //console.log("Sdfsdf");
+                console.log("Sdfsdf");
             }
 
             // Call this function when a checkbox is ticked...
@@ -505,7 +516,9 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                                 value[ $scope.tickProperty ] = false;
                             }
                         });
-                        $scope.allSelectedItems = [];   // reset
+                        $scope.allSelectedItems = []; // reset
+                        $scope.editMode = false;
+                        $scope.selectedFilterClicked();
                         break;
                     case 'RESET':
                         $scope.inputModel = angular.copy( $scope.backUp );
