@@ -63,7 +63,8 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             onBlur          : '&',
             onFocus         : '&',
             onItemClick     : '&',
-            onSearch        : '&'
+            onSearch        : '&',
+            filterButtonClicked: '&'
         },
 
         template:
@@ -526,6 +527,11 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                     default:
                 }
                 $scope.refreshSelectedItems();
+
+                if ($scope.filterButtonClicked) {
+                    $scope.filterButtonClicked(type);
+                }
+
             }
 
 
