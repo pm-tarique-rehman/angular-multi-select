@@ -196,6 +196,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
                 }
                 else {
+                    $scope.searchFilter = '';
                     //console.log(" 1. [IN angular-multi-select] onSearchButtonClicked -> passing context over to pmIdProduct. scope.labelFilter: ", $scope.labelFilter);
                     var promise = $scope.onSearch({searchFilter:$scope.labelFilter});
                     //console.log(" 9. [IN angular-multi-select] onSearchButtonClicked -> promise: ", promise)
