@@ -98,7 +98,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                                 '</label>&nbsp;&nbsp;' +
                             '</div>' +
                         '</div>' +
-                        '<div ng-show="errors" style="font-size:13px">{{ errorMessage }}</div>' +
+                        '<div ng-show="errors" style="font-size:13px;max-width:300px;">{{ errorMessage }}</div>' +
                         '<div ng-show="!filteredModel.length && !useApiSearch" style="font-size:13px">"No records found. Please modify your search criteria."</div>' +
                         '<div ng-show="!filteredModel.length && editMode" style="font-size:13px">{{(allSelectedItems.length ? "No records found. Please modify your search criteria." : "No Records.")}}</div>' +
                     '</div>' +
@@ -376,7 +376,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                         });
                     //}
 
-                    if ( $scope.more === true && ($scope.allSelectedItems.length !== $scope.inputModel.length)) {
+                    if ( $scope.more === true) {
                         if (tempMaxLabels > 0) {
                             $scope.varButtonLabel += ', ... ';
                         }
@@ -504,7 +504,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                 var temp = [];
                 switch( type.toUpperCase() ) {
                     case 'ALL':
-                        angular.forEach( $scope.inputModel, function( value, key ) {
+                        angular.forEach( $filter('filter')($scope.inputModel,$scope.labelFilter), function( value, key ) {
                             if ( typeof value !== 'undefined' && value[ $scope.disableProperty ] !== true ) {
                                 value[ $scope.tickProperty ] = true;
                             }
