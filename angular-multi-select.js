@@ -99,9 +99,9 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                                 '</label>&nbsp;&nbsp;' +
                             '</div>' +
                         '</div>' +
-                        '<div ng-show="errors" style="font-size:13px;max-width:300px;">{{ errorMessage }}</div>' +
+                        '<div ng-show="errors && !editMode" style="font-size:13px;max-width:300px;">{{ errorMessage }}</div>' +
                         '<div ng-show="!filteredModel.length && !useApiSearch" style="font-size:13px">"No records found. Please modify your search criteria."</div>' +
-                        '<div ng-show="!filteredModel.length && editMode" style="font-size:13px">{{(allSelectedItems.length ? "No records found. Please modify your search criteria." : "No Records.")}}</div>' +
+                        '<div ng-show="!filteredModel.length && editMode" style="font-size:13px">{{(allSelectedItems.length ? "No records found. Please modify your search criteria." : "No records selected.")}}</div>' +
                     '</div>' +
                 '</div>' +
             '</div>',
