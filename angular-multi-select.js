@@ -132,7 +132,11 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
             $scope.isElementInList = function (list, element) {
                 var index = -1,
-                    key = key || "name";
+                    key = "id";
+
+                if (element[key] === undefined || element[key] === null) {
+                    key = "name";
+                }
 
                 list.forEach(function (item, itemIndex) {
                     if (item[key] === element [key]) {
