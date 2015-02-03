@@ -82,7 +82,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                             '<button type="button" ng-click="select( \'all\' )"    class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'all\' )">Select All</button> ' +
                             '<button type="button" ng-click="select( \'none\' )"   class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'none\' )">Remove All</button> ' +
                         '</div> ' +
-                        '<div class="multiSelect selectedFilterDiv">'+
+                        '<div class="multiSelect selectedFilterDiv" ng-show="displayHelper( \'selected_filter\' )">'+
                             '<label class="multiSelect selectFilterLabel" >Show Selected</label>' +
                             '<input class="multiSelect selectFilterCheckbox" style="display:inlineBlock" type="checkbox" ng-model="editMode" ng-change="selectedFilterClicked($event)"/>' +
                         '</div>' +
@@ -116,7 +116,6 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             $scope.errors = false;
             $scope.errorMessage = "";
             $scope.allSelectedItems = [];
-
 
             $scope.selectedFilterClicked = function (event) {
                 $scope.labelFilter = '';
@@ -235,9 +234,6 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
             // Show or hide a helper element
             $scope.displayHelper = function( elementString ) {
-                if ( typeof attrs.helperElements === 'undefined' ) {
-                    return true;
-                }
                 switch( elementString.toUpperCase() ) {
                     case 'ALL':
                         if ( attrs.selectionMode && $scope.selectionMode.toUpperCase() === 'SINGLE' ) {
@@ -269,9 +265,19 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                             return true;
                         }
                         break;
+                    case 'SELECTED_FILTER':
+                        if(( attrs.selectionMode && $scope.selectionMode.toUpperCase() === 'SINGLE' ) || ( typeof attrs.editMode === 'undefined' )){
+                            return false;
+                        } else {
+                            return true;
+                        }
                     default:
                         break;
-                }$scope
+                }
+
+                if ( typeof attrs.helperElements === 'undefined') {
+                    return true;
+                }
             }
 
             $scope.outsideClick = function () {
