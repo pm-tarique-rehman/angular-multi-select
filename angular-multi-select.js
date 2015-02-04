@@ -600,6 +600,13 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
             $scope.$watch('clearSelection', function (newVal, oldVal){
 
                 if (newVal === true) {
+
+                    $scope.inputModel.forEach(function (item){
+                        if (item.ticked) {
+                            item.ticked = false;
+                        }
+                    });
+
                     $scope.allSelectedItems = [];
                     $scope.varButtonLabel = $scope.defaultLabel;
                     if ( typeof attrs.outputModel !== 'undefined' ) {
