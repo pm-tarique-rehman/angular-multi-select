@@ -88,7 +88,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                         '</div>' +
                     '</div>'+
                     '<div class="listContainer">' +
-                        '<div ng-repeat="item in (filteredModel = ( (editMode ? allSelectedItems : inputModel) | filter: searchFilter))" ng-class="orientation" class="multiSelect multiSelectItem">' +
+                        '<div ng-repeat="item in (filteredModel = ((editMode ? allSelectedItems : inputModel) | filter: searchFilter))" ng-class="orientation" class="multiSelect multiSelectItem">' +
                             '<div class="multiSelect acol">' +
                                 '<div class="multiSelect" ng-show="item[ tickProperty ]">&#10004;</div>' +
                             '</div>' +
@@ -266,11 +266,12 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                         }
                         break;
                     case 'SELECTED_FILTER':
-                        if(( attrs.selectionMode && $scope.selectionMode.toUpperCase() === 'SINGLE' ) || ( typeof attrs.editMode === 'undefined' )){
-                            return false;
-                        } else {
-                            return true;
-                        }
+                        // if((  )){
+                        //     return false;
+                        // } else {
+                        //     return true;
+                        // }
+                        return !(typeof attrs.editMode === 'undefined');
                     default:
                         break;
                 }
@@ -302,6 +303,8 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                                     // If it's single selection mode
                     if ( attrs.selectionMode && $scope.selectionMode.toUpperCase() === 'SINGLE' ) {
                         $scope.inputModel[ index ][ $scope.tickProperty ] = true;
+                        $scope.allSelectedItems = [$scope.inputModel[ index ]];
+
                         for( i=0; i<$scope.inputModel.length;i++) {
                             if ( i !== index ) {
                                 $scope.inputModel[ i ][ $scope.tickProperty ] = false;
@@ -601,12 +604,13 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
 
                 if (newVal === true) {
 
-                    $scope.inputModel.forEach(function (item){
-                        if (item.ticked) {
-                            item.ticked = false;
-                        }
-                    });
-
+                    if ($scope.inputModel) {
+                        $scope.inputModel.forEach(function (item){
+                            if (item.ticked) {
+                                item.ticked = false;
+                            }
+                        });
+                    }
                     $scope.allSelectedItems = [];
                     $scope.varButtonLabel = $scope.defaultLabel;
                     if ( typeof attrs.outputModel !== 'undefined' ) {
