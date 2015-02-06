@@ -79,7 +79,7 @@ angular.module( 'multi-select', ['ng'] ).directive( 'multiSelect' , [ '$sce', '$
                      '<div class="multiSelect line">' +
                          '<div class="multiSelect inlineBlock filterButtonsContainerDiv" ng-show="displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' )">' +
                             '<span ng-if="!isDisabled && ( displayHelper( \'all\' ) || displayHelper( \'none\' ) || displayHelper( \'reset\' ))"> &nbsp;</span>' +
-                            '<button type="button" ng-click="select( \'all\' )"    class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'all\' )">Select All</button> ' +
+                            '<button type="button" ng-click="select( \'all\' )"    class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'all\' )" title="Only displayed items will be selected.">Select All</button> ' +
                             '<button type="button" ng-click="select( \'none\' )"   class="multiSelect helperButton" ng-if="!isDisabled && displayHelper( \'none\' )">Remove All</button> ' +
                         '</div> ' +
                         '<div class="multiSelect selectedFilterDiv" ng-show="displayHelper( \'selected_filter\' )">'+
